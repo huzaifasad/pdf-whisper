@@ -221,141 +221,150 @@ export default function PDFChatInterface() {
           </SheetContent>
         </Sheet>
       </header>
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left side - Chat Interface */}
-        <div className="flex flex-col w-full lg:w-1/2 p-4 border-r ">
-          <Card className="flex-grow flex flex-col overflow-auto">
-            <CardContent className="flex-grow flex flex-col p-4">
-              <ScrollArea className="flex-grow pr-4" ref={chatContainerRef}>
-                <AnimatePresence>
-                  {messages.map((message, index) => (
+      <div className="flex flex-col lg:flex-row flex-1 overflow-auto">
+  {/* Left side - Chat Interface */}
+  <div className="flex flex-col w-full lg:w-1/2 p-4 border-b lg:border-b-0 lg:border-r">
+    <Card className="flex-grow flex flex-col overflow-auto">
+      <CardContent className="flex-grow flex flex-col p-4">
+        <ScrollArea className="flex-grow pr-4" ref={chatContainerRef}>
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                {...fadeInUp}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+              >
+                <div className={`flex items-start ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback>{message.type === 'user' ? <User /> : <Bot />}</AvatarFallback>
+                  </Avatar>
+                  <div
+                    className={`mx-2 p-3 rounded-lg ${
+                      message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+    <form onSubmit={handleSendMessage} className="mt-4 flex items-center">
+      <Input
+        type="text"
+        placeholder="Ask a question about the PDF..."
+        value={inputMessage}
+        onChange={(e) => setInputMessage(e.target.value)}
+        className="flex-grow mr-2"
+      />
+      <Button type="submit" size="icon" disabled={files.length === 0 || isLoading}>
+        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+      </Button>
+    </form>
+  </div>
+
+  {/* Right side - PDF Viewer */}
+  <div className="flex flex-col w-full lg:w-1/2 p-4">
+    <Tabs defaultValue="upload" className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="upload">Upload PDF</TabsTrigger>
+        <TabsTrigger value="view" disabled={files.length === 0}>
+          View PDF
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="upload" className="mt-4">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)]">
+            {files.length > 0 ? (
+              <div className="w-full">
+                <h3 className="text-lg font-semibold mb-4">Uploaded PDFs</h3>
+                <ScrollArea className="h-[calc(100vh-24rem)]">
+                  {files.map((file, index) => (
                     <motion.div
                       key={index}
                       {...fadeInUp}
-                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                      className="flex items-center justify-between p-2 mb-2 bg-secondary rounded-lg"
                     >
-                      <div className={`flex items-start ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                        <Avatar className="w-8 h-8">
-                          <AvatarFallback>{message.type === 'user' ? <User /> : <Bot />}</AvatarFallback>
-                        </Avatar>
-                        <div className={`mx-2 p-3 rounded-lg ${message.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                          {message.content}
+                      <div className="flex items-center">
+                        <FileText className="h-6 w-6 text-primary mr-2" />
+                        <div>
+                          <p className="font-medium">{file.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
                         </div>
                       </div>
+                      <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
                     </motion.div>
                   ))}
-                </AnimatePresence>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-          <form onSubmit={handleSendMessage} className="mt-4 flex items-center">
+                </ScrollArea>
+                {files.length < MAX_FILES && (
+                  <Button onClick={() => fileInputRef.current.click()} className="mt-4">
+                    <Upload className="mr-2 h-4 w-4" /> Add More PDFs
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center">
+                <Upload className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Upload your PDFs</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  PDF files up to 10MB are supported (max 5 files)
+                </p>
+                <Button onClick={() => fileInputRef.current.click()}>
+                  <Upload className="mr-2 h-4 w-4" /> Choose PDFs
+                </Button>
+              </div>
+            )}
             <Input
-              type="text"
-              placeholder="Ask a question about the PDF..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              className="flex-grow mr-2"
+              type="file"
+              accept=".pdf"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              ref={fileInputRef}
             />
-            <Button type="submit" size="icon" disabled={files.length === 0 || isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
-          </form>
-        </div>
-
-        {/* Right side - PDF Viewer */}
-        <div className="hidden lg:flex flex-col w-1/2 p-4">
-          <Tabs defaultValue="upload" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Upload PDF</TabsTrigger>
-              <TabsTrigger value="view" disabled={files.length === 0}>View PDF</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upload" className="mt-4">
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)]">
-                  {files.length > 0 ? (
-                    <div className="w-full">
-                      <h3 className="text-lg font-semibold mb-4">Uploaded PDFs</h3>
-                      <ScrollArea className="h-[calc(100vh-24rem)]">
-                        {files.map((file, index) => (
-                          <motion.div
-                            key={index}
-                            {...fadeInUp}
-                            className="flex items-center justify-between p-2 mb-2 bg-secondary rounded-lg"
-                          >
-                            <div className="flex items-center">
-                              <FileText className="h-6 w-6 text-primary mr-2" />
-                              <div>
-                                <p className="font-medium">{file.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                                </p>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => removeFile(index)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </motion.div>
-                        ))}
-                      </ScrollArea>
-                      {files.length < MAX_FILES && (
-                        <Button onClick={() => fileInputRef.current.click()} className="mt-4">
-                          <Upload className="mr-2 h-4 w-4" /> Add More PDFs
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <Upload className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Upload your PDFs</h3>
-                      <p className="text-sm text-muted-foreground mb-4">PDF files up to 10MB are supported (max 5 files)</p>
-                      <Button onClick={() => fileInputRef.current.click()}>
-                        <Upload className="mr-2 h-4 w-4" /> Choose PDFs
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="view" className="mt-4">
+        <Card>
+          <CardContent className="min-h-[calc(100vh-16rem)] p-0">
+            {files.length > 0 && (
+              <>
+                <div className="flex justify-between items-center p-2 bg-secondary">
+                  <div className="flex space-x-2">
+                    {files.map((file, index) => (
+                      <Button
+                        key={index}
+                        variant={index === activeFileIndex ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setActiveFileIndex(index)}
+                      >
+                        PDF {index + 1}
                       </Button>
-                    </div>
-                  )}
-                  <Input
-                    type="file"
-                    accept=".pdf"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    ref={fileInputRef}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="view" className="mt-4">
-              <Card>
-                <CardContent className="min-h-[calc(100vh-16rem)] p-0">
-                  {files.length > 0 && (
-                    <>
-                      <div className="flex justify-between items-center p-2 bg-secondary">
-                        <div className="flex space-x-2">
-                          {files.map((file, index) => (
-                            <Button
-                              key={index}
-                              variant={index === activeFileIndex ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setActiveFileIndex(index)}
-                            >
-                              PDF {index + 1}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                      <iframe
-                        src={URL.createObjectURL(files[activeFileIndex])}
-                        title="PDF Viewer"
-                        className="w-full h-[calc(100vh-20rem)] border-none"
-                      />
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+                    ))}
+                  </div>
+                </div>
+                <iframe
+                  src={URL.createObjectURL(files[activeFileIndex])}
+                  title="PDF Viewer"
+                  className="w-full h-[calc(100vh-20rem)] border-none"
+                />
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  </div>
+</div>
+
       <footer className="p-4 border-t">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
