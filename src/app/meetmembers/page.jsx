@@ -14,7 +14,7 @@ const teamMembers = [
     name: "Huzaifa Saad",
     role: "Volunteer",
     image: "https://fiverr-res.cloudinary.com/t_profile_original,q_auto,f_auto/attachments/profile/photo/7b48621dea9e5a1ae667cdc398002ac2-1692004885294/8f2d0260-c96f-455d-bd6b-66cc888acffc.png",
-    bio: "I'm interested in solving technical problems in everything...\nI'm currently working on Next.js AWS Blockchain ...\nI'm looking to collaborate free on some great ideas ...",
+    bio: "I'm interested in solving technical problems in everything...",
     github: "https://github.com/huzaifasad",
     linkedin: "https://linkedin.com/in/huzaifasad",
     twitter: "https://twitter.com/huzaifasad"
