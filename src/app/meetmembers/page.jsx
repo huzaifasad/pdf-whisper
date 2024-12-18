@@ -31,25 +31,6 @@ const teamMembers = [
 
 const MotionCard = motion(Card)
 
-const shimmer = (w, h) => `
-<svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <defs>
-    <linearGradient id="g">
-      <stop stop-color="#333" offset="20%" />
-      <stop stop-color="#222" offset="50%" />
-      <stop stop-color="#333" offset="70%" />
-    </linearGradient>
-  </defs>
-  <rect width="${w}" height="${h}" fill="#333" />
-  <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
-  <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
-</svg>`
-
-const toBase64 = (str) =>
-  typeof window === 'undefined'
-    ? Buffer.from(str).toString('base64')
-    : window.btoa(str)
-
 export default function MeetMembers() {
   const [selectedMember, setSelectedMember] = useState(null)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -59,10 +40,10 @@ export default function MeetMembers() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.h1 
-          className="text-5xl md:text-7xl font-extrabold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
+          className="text-5xl md:text-7xl font-extrabold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -74,30 +55,51 @@ export default function MeetMembers() {
             {isLoaded && teamMembers.map((member, index) => (
               <MotionCard 
                 key={member.name}
-                className="overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 bg-gray-800 w-full max-w-md"
+                className="overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 bg-gradient-to-br from-purple-950 to-indigo-950 w-full max-w-md relative"
                 initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
                 animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                 exit={{ opacity: 0, scale: 0.8, rotateY: 180 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <CardContent className="p-0 relative group">
-                  <div className="overflow-hidden  ">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      width={400}
-                      height={400}
-                      className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
-                      placeholder="blur"
-                      blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(700, 475))}`}
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <h2 className="text-3xl font-bold mb-2">{member.name}</h2>
+                {/* Curved line overlay */}
+                <div className="absolute inset-0 overflow-hidden">
+                  <svg className="absolute -right-24 -top-24 w-96 h-96 text-red-500/20" viewBox="0 0 100 100">
+                    <path d="M100,0 C60,20 40,40 20,100" stroke="currentColor" strokeWidth="1" fill="none"/>
+                  </svg>
+                </div>
+                
+                <CardContent className="p-8 relative">
+                  <div className="text-center mb-8">
+                    <div className="relative w-48 h-48 mx-auto mb-6">
+                      {/* Glowing border effect */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 via-white to-yellow-300 opacity-75 blur-md animate-pulse" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600" />
+                      <div className="relative rounded-full overflow-hidden border-4 border-white h-full">
+                        <Image
+                          src={member.image}
+                          alt={member.name}
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      {member.name}
+                    </h2>
                     <p className="text-lg text-purple-300 mb-4">{member.role}</p>
-                    <Button onClick={() => setSelectedMember(member)} variant="outline" className="w-full bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border-purple-500 hover:border-pink-500 transition-colors duration-300">
+                    <p className="text-gray-300 whitespace-pre-line mb-6">{member.bio}</p>
+                    <div className="flex justify-center space-x-4 mb-6">
+                      <SocialButton href={member.github} icon={<Github className="h-5 w-5" />} />
+                      <SocialButton href={member.linkedin} icon={<Linkedin className="h-5 w-5" />} />
+                      <SocialButton href={member.twitter} icon={<Twitter className="h-5 w-5" />} />
+                    </div>
+                    <Button 
+                      onClick={() => setSelectedMember(member)} 
+                      variant="outline" 
+                      className="w-full bg-purple-500/10 backdrop-blur-sm hover:bg-purple-500/20 text-purple-300 border-purple-500 hover:border-pink-500 transition-colors duration-300"
+                    >
                       Learn More
                     </Button>
                   </div>
@@ -110,39 +112,36 @@ export default function MeetMembers() {
 
       <Dialog open={selectedMember !== null} onOpenChange={() => setSelectedMember(null)}>
         {selectedMember && (
-          <DialogContent className="sm:max-w-[600px] bg-gray-900 text-white border-purple-500">
+          <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-purple-950 to-indigo-950 text-white border-purple-500">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">{selectedMember.name}</DialogTitle>
-              <DialogDescription className="text-lg text-purple-300">{selectedMember.role}</DialogDescription>
+              <DialogTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+                {selectedMember.name}
+              </DialogTitle>
+              <DialogDescription className="text-lg text-purple-300">
+                {selectedMember.role}
+              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-6 py-4">
               <div className="relative w-48 h-48 mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full animate-spin-slow" />
-                <img
-                  src={selectedMember.image}
-                  alt={selectedMember.name}
-                  width={200}
-                  height={200}
-                  className="absolute inset-1 w-46 h-46 rounded-full object-cover border-4 border-white"
-                />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 via-white to-yellow-300 opacity-75 blur-md animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600" />
+                <div className="relative rounded-full overflow-hidden border-4 border-white h-full">
+                  <Image
+                    src={selectedMember.image}
+                    alt={selectedMember.name}
+                    width={200}
+                    height={200}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
-              <p className="text-center text-gray-300 whitespace-pre-line ">{selectedMember.bio}</p>
+              <p className="text-center text-gray-300 whitespace-pre-line">
+                {selectedMember.bio}
+              </p>
               <div className="flex justify-center space-x-4">
-                <a href={selectedMember.github} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="icon" className="rounded-full bg-purple-500 hover:bg-purple-500/20 hover:text-purple-300 transition-colors duration-300">
-                    <Github className="h-5 w-5" />
-                  </Button>
-                </a>
-                <a href={selectedMember.linkedin} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="icon" className="rounded-full  bg-purple-500 hover:bg-purple-500/20 hover:text-purple-300 transition-colors duration-300">
-                    <Linkedin className="h-5 w-5" />
-                  </Button>
-                </a>
-                <a href={selectedMember.twitter} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="icon" className="rounded-full bg-purple-500 hover:bg-purple-500/20 hover:text-purple-300 transition-colors duration-300">
-                    <Twitter className="h-5 w-5" />
-                  </Button>
-                </a>
+                <SocialButton href={selectedMember.github} icon={<Github className="h-5 w-5" />} />
+                <SocialButton href={selectedMember.linkedin} icon={<Linkedin className="h-5 w-5" />} />
+                <SocialButton href={selectedMember.twitter} icon={<Twitter className="h-5 w-5" />} />
               </div>
             </div>
           </DialogContent>
@@ -158,6 +157,20 @@ export default function MeetMembers() {
         <ChevronDown className="w-8 h-8 text-purple-400 animate-bounce" />
       </motion.div>
     </div>
+  )
+}
+
+function SocialButton({ href, icon }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      <Button 
+        variant="outline" 
+        size="icon" 
+        className="rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border-purple-500 hover:border-pink-500 transition-colors duration-300"
+      >
+        {icon}
+      </Button>
+    </a>
   )
 }
 
