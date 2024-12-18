@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Github, Linkedin, Twitter, ChevronDown } from 'lucide-react'
+import { Github, Linkedin, Twitter, ChevronDown, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import html2canvas from 'html2canvas'
 
 const teamMembers = [
   {
@@ -34,10 +35,53 @@ const MotionCard = motion(Card)
 export default function MeetMembers() {
   const [selectedMember, setSelectedMember] = useState(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const cardRefs = useRef({})
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const downloadImage = async (imageUrl, memberName) => {
+    const image = await fetch(imageUrl)
+    const imageBlog = await image.blob()
+    const imageURL = URL.createObjectURL(imageBlog)
+    
+    const link = document.createElement('a')
+    link.href = imageURL
+    link.download = `${memberName.replace(' ', '_')}_profile.jpg`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const downloadCard = async (memberName) => {
+    const cardElement = cardRefs.current[memberName]
+    if (!cardElement) return
+
+    const scale = 2
+    const canvas = await html2canvas(cardElement, {
+      scale: scale,
+      useCORS: true,
+      logging: false,
+      backgroundColor: null,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById(`card-${memberName.replace(' ', '-')}`)
+        if (clonedElement) {
+          clonedElement.style.transform = 'none'
+          clonedElement.style.borderRadius = '24px'
+          clonedElement.style.overflow = 'hidden'
+        }
+      }
+    })
+
+    const image = canvas.toDataURL('image/png')
+    const link = document.createElement('a')
+    link.href = image
+    link.download = `${memberName.replace(' ', '_')}_card.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 text-white py-16 px-4 sm:px-6 lg:px-8">
@@ -61,22 +105,21 @@ export default function MeetMembers() {
                 exit={{ opacity: 0, scale: 0.8, rotateY: 180 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 whileHover={{ scale: 1.02 }}
+                ref={el => cardRefs.current[member.name] = el}
               >
-                {/* Curved line overlay */}
                 <div className="absolute inset-0 overflow-hidden">
                   <svg className="absolute -right-24 -top-24 w-96 h-96 text-red-500/20" viewBox="0 0 100 100">
                     <path d="M100,0 C60,20 40,40 20,100" stroke="currentColor" strokeWidth="1" fill="none"/>
                   </svg>
                 </div>
                 
-                <CardContent className="p-8 relative">
+                <CardContent className="p-8 relative" id={`card-${member.name.replace(' ', '-')}`}>
                   <div className="text-center mb-8">
-                    <div className="relative w-48 h-48 mx-auto mb-6">
-                      {/* Glowing border effect */}
+                    <div className="relative w-48 h-48 mx-auto mb-6 group">
                       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 via-white to-yellow-300 opacity-75 blur-md animate-pulse" />
                       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600" />
                       <div className="relative rounded-full overflow-hidden border-4 border-white h-full">
-                        <Image
+                       <img
                           src={member.image}
                           alt={member.name}
                           width={200}
@@ -84,6 +127,12 @@ export default function MeetMembers() {
                           className="w-full h-full object-cover"
                         />
                       </div>
+                      <Button
+                        onClick={() => downloadImage(member.image, member.name)}
+                        className="absolute bottom-0 right-0 rounded-full p-2 bg-purple-500 hover:bg-purple-600 transition-colors duration-300 opacity-0 group-hover:opacity-100"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
                     </div>
                     <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                       {member.name}
@@ -95,13 +144,22 @@ export default function MeetMembers() {
                       <SocialButton href={member.linkedin} icon={<Linkedin className="h-5 w-5" />} />
                       <SocialButton href={member.twitter} icon={<Twitter className="h-5 w-5" />} />
                     </div>
-                    <Button 
-                      onClick={() => setSelectedMember(member)} 
-                      variant="outline" 
-                      className="w-full bg-purple-500/10 backdrop-blur-sm hover:bg-purple-500/20 text-purple-300 border-purple-500 hover:border-pink-500 transition-colors duration-300"
-                    >
-                      Learn More
-                    </Button>
+                    <div className="flex space-x-4">
+                      <Button 
+                        onClick={() => setSelectedMember(member)} 
+                        variant="outline" 
+                        className="flex-1 bg-purple-500/10 backdrop-blur-sm hover:bg-purple-500/20 text-purple-300 border-purple-500 hover:border-pink-500 transition-colors duration-300"
+                      >
+                        Learn More
+                      </Button>
+                      <Button
+                        onClick={() => downloadCard(member.name)}
+                        variant="outline"
+                        className="bg-purple-500/10 backdrop-blur-sm hover:bg-purple-500/20 text-purple-300 border-purple-500 hover:border-pink-500 transition-colors duration-300"
+                      >
+                        <Download className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </MotionCard>
@@ -126,7 +184,7 @@ export default function MeetMembers() {
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 via-white to-yellow-300 opacity-75 blur-md animate-pulse" />
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600" />
                 <div className="relative rounded-full overflow-hidden border-4 border-white h-full">
-                  <Image
+                 <img
                     src={selectedMember.image}
                     alt={selectedMember.name}
                     width={200}
