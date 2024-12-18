@@ -89,6 +89,10 @@ export default function TalkToPDFLanding() {
           <Link href="/chat">
             <Button className="w-full md:w-auto">Get Started</Button>
           </Link>
+          <Link href="/meetmembers">
+            <Button className="w-full md:w-auto">Meet Us</Button>
+          </Link>
+
         </nav>
         <button className="ml-auto md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           {isMenuOpen ? <X /> : <Menu />}
