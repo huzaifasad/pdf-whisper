@@ -368,9 +368,10 @@ export default function PDFChatInterface() {
       <footer className="p-4 border-t">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            {plan.usedStorage.toFixed(1)} GB / {plan.totalStorage} GB Used
+{/*             {plan.usedStorage.toFixed(1)} GB / {plan.totalStorage} GB Used */}
+            10k Characters /20k charcters
           </div>
-          <Progress value={(plan.usedStorage / plan.totalStorage) * 100} className="w-1/2" />
+{/*           <Progress value={(plan.usedStorage / plan.totalStorage) * 100} className="w-1/2" /> */}
         </div>
       </footer>
     </div>
